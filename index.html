@@ -1,0 +1,845 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LabMix: The Molarity Quest</title>
+
+  <!-- Google Font Lato -->
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#f7f9fb;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --accent:#1e3a8a;
+      --success:#0f766e;
+      --danger:#b91c1c;
+      --glass: rgba(255,255,255,0.6);
+      --shadow: 0 6px 18px rgba(17,24,39,0.08);
+      font-family: 'Lato', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      background: linear-gradient(180deg, var(--bg), #ffffff 60%);
+      color:#0f172a;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.45;
+    }
+
+    header{
+      background:var(--card);
+      padding:28px 22px;
+      box-shadow: var(--shadow);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      position:sticky;
+      top:0;
+      z-index:10;
+    }
+
+    header h1{
+      margin:0;
+      font-size:20px;
+      letter-spacing:0.2px;
+      color:var(--accent);
+    }
+
+    .container{
+      max-width:1100px;
+      margin:28px auto;
+      padding:20px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 360px 1fr;
+      gap:22px;
+    }
+
+    /* Card */
+    .card{
+      background:var(--card);
+      border-radius:12px;
+      padding:18px;
+      box-shadow: var(--shadow);
+      min-height:120px;
+    }
+
+    /* Side menu / selection */
+    .choices{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .choice{
+      border-radius:10px;
+      padding:14px;
+      border:1px solid #e6eef8;
+      cursor:pointer;
+      transition:transform .14s ease, box-shadow .14s ease;
+      background:linear-gradient(180deg, rgba(255,255,255,0.6), rgba(245,249,255,0.6));
+    }
+    .choice:hover{ transform:translateY(-4px); box-shadow: 0 8px 22px rgba(2,6,23,0.06);}
+    .choice.active{ border:2px solid var(--accent); }
+
+    .choice h3{ margin:0 0 6px 0; font-size:15px; color:var(--accent); }
+    .choice p{ margin:0; color:var(--muted); font-size:13px; }
+
+    /* Main lab area */
+    .lab{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .lab-visual{
+      display:flex;
+      gap:18px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+    }
+
+    /* Simple beaker visual */
+    .beaker{
+      width:220px;
+      height:260px;
+      border-radius:8px;
+      background: linear-gradient(180deg,#eaf6ff,#dff3ff 60%);
+      border: 6px solid #cfe9ff;
+      position:relative;
+      box-shadow: 0 8px 18px rgba(13,42,68,0.06);
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+      overflow:hidden;
+    }
+
+    .liquid{
+      width:90%;
+      height:40%;
+      background: linear-gradient(180deg,#cfefff,#88d1ff);
+      border-radius:4px 4px 28px 28px;
+      transition:height .5s ease;
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#02254a;
+      font-weight:700;
+      font-size:14px;
+    }
+    .scale{
+      position:absolute;
+      right:8px;
+      top:10px;
+      font-size:12px;
+      color:var(--muted);
+      writing-mode:vertical-rl;
+      transform:rotate(180deg);
+      opacity:0.7;
+    }
+
+    .lab-controls{
+      flex:1;
+      min-width:260px;
+    }
+
+    label{ display:block; font-size:13px; margin-bottom:6px; color:#0f172a;}
+    input[type="number"], input[type="text"], select, textarea {
+      width:100%;
+      padding:10px 12px;
+      border-radius:8px;
+      border:1px solid #e6eef8;
+      background:transparent;
+      font-size:14px;
+      margin-bottom:10px;
+    }
+
+    .btn{
+      display:inline-block;
+      padding:10px 14px;
+      border-radius:9px;
+      border:none;
+      background:var(--accent);
+      color:white;
+      font-weight:700;
+      cursor:pointer;
+      box-shadow: 0 6px 18px rgba(30,58,138,0.12);
+    }
+    .btn.secondary{
+      background:transparent;
+      color:var(--accent);
+      border:1px solid #dbe9ff;
+    }
+    .muted{ color:var(--muted); font-size:13px; }
+
+    .explanation{
+      background: linear-gradient(180deg,#ffffff,#fbfdff);
+      padding:12px;
+      border-radius:10px;
+      border:1px solid #eef6ff;
+    }
+
+    .mission{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:8px;
+    }
+
+    .quiz-area{ margin-top:10px; }
+
+    .quiz-question{
+      padding:14px;
+      border-radius:10px;
+      border:1px dashed #e6eef8;
+      margin-bottom:10px;
+      background:linear-gradient(180deg,#fff,#fbfcff);
+    }
+
+    .result{
+      padding:12px;
+      border-radius:10px;
+      margin-top:8px;
+    }
+    .result.success{ background:rgba(16,185,129,0.08); border-left:4px solid #10b981; }
+    .result.fail{ background:rgba(239,68,68,0.08); border-left:4px solid #ef4444; }
+
+    footer{
+      margin-top:30px;
+      padding:18px 22px;
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    /* responsive */
+    @media (max-width:980px){
+      .grid{ grid-template-columns: 1fr; }
+      .beaker{ margin:auto; }
+    }
+
+    /* small helpers */
+    .row{ display:flex; gap:10px; align-items:center; }
+    .badge{ background:#eef6ff; color:var(--accent); padding:6px 8px; border-radius:8px; font-weight:700; font-size:13px;}
+    .leaderboard{ margin-top:12px; }
+    .leaderboard li{ list-style:none; padding:8px; border-bottom:1px dashed #eef6ff; display:flex; justify-content:space-between; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>LabMix: The Molarity Quest</h1>
+    <div class="row muted">
+      <div class="badge">Simulasi Kimia</div>
+      <div style="font-size:13px; margin-left:8px">Interaktif — Molaritas &amp; Kuis</div>
+    </div>
+  </header>
+
+  <main class="container" role="main">
+    <div class="grid">
+      <!-- LEFT: Choice panel -->
+      <aside class="card">
+        <h2 style="margin-top:0; font-size:16px; color:var(--accent)">Pilih Jenis Larutan</h2>
+        <p class="muted" style="margin-top:6px">Mari membuat larutan — pilih salah satu sumber zat.</p>
+
+        <div class="choices" id="choices">
+          <div class="choice" data-type="solid" tabindex="0">
+            <h3>Zat Padat (mis. NaCl)</h3>
+            <p>Larutan dibuat dari melarutkan padatan.</p>
+          </div>
+          <div class="choice" data-type="liquid" tabindex="0">
+            <h3>Zat Cair (mis. asam asetat pekat)</h3>
+            <p>Larutan dari cairan konsentrat diencerkan.</p>
+          </div>
+          <div class="choice" data-type="mixture" tabindex="0">
+            <h3>Campuran (dual-sumber)</h3>
+            <p>Contoh: campuran padatan + pelarut organik</p>
+          </div>
+        </div>
+
+        <hr style="margin:14px 0; border:none; border-top:1px solid #f0f6ff" />
+        <div>
+          <strong>Petunjuk singkat</strong>
+          <p class="muted" style="margin-top:6px">Pilih jenis larutan → ikuti eksperimen visual → hitung molaritas (M = mol / L) → masukkan jawaban → dapatkan pembahasan → lanjut ke kuis bertingkat.</p>
+        </div>
+      </aside>
+
+      <!-- RIGHT: Lab area -->
+      <section class="lab card" aria-live="polite">
+        <!-- Visual + controls -->
+        <div class="lab-visual">
+          <div class="beaker" aria-hidden="true">
+            <div class="scale">250 mL</div>
+            <div class="liquid" id="beaker-liquid">--</div>
+          </div>
+
+          <div class="lab-controls">
+            <div id="intro" class="explanation">
+              <h3 style="margin:0 0 8px 0; color:var(--accent)">Penjelasan singkat</h3>
+              <p id="topicText" class="muted" style="margin:0 0 8px 0">
+                Pilih jenis larutan di sebelah kiri untuk memulai simulasi. Anda akan melihat parameter yang berubah pada beaker visual.
+              </p>
+
+              <div style="display:flex; gap:8px; margin-top:8px; align-items:center">
+                <div><strong>Rumus utama</strong></div>
+                <div class="muted" style="font-size:14px">M = jumlah mol / volume (L)</div>
+              </div>
+
+              <div id="missionWrap" style="margin-top:10px; display:none">
+                <div class="mission">
+                  <div>
+                    <strong>Misi</strong>
+                    <div id="missionText" class="muted" style="font-size:13px; margin-top:6px"></div>
+                  </div>
+                  <button class="btn secondary" id="regenMission">acak misi</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Experiment input -->
+            <div id="experiment" style="margin-top:12px; display:none">
+              <label for="compound">Pilih zat / senyawa contoh</label>
+              <select id="compound">
+                <!-- options filled by JS -->
+              </select>
+
+              <div id="inputsSolid" style="display:none">
+                <label for="mass">Massa zat (gram)</label>
+                <input type="number" id="mass" min="0" step="any" placeholder="contoh: 5.85" />
+
+                <label for="volMl">Volume pelarut akhir (mL)</label>
+                <input type="number" id="volMl" min="1" step="any" placeholder="contoh: 250" />
+              </div>
+
+              <div id="inputsLiquid" style="display:none">
+                <label for="concPercent">Konsentrasi awal (% w/v atau % v/v, terapan)</label>
+                <input type="number" id="concPercent" min="0" step="any" placeholder="contoh: 36 (untuk 36%)" />
+
+                <label for="volFinal">Volume final yang diinginkan (mL)</label>
+                <input type="number" id="volFinal" min="1" step="any" placeholder="contoh: 500" />
+              </div>
+
+              <div id="inputsMix" style="display:none">
+                <label for="massMix">Massa zat padat (g)</label>
+                <input type="number" id="massMix" min="0" step="any" placeholder="contoh: 3.0" />
+                <label for="volMix">Volume pelarut akhir (mL)</label>
+                <input type="number" id="volMix" min="1" step="any" placeholder="contoh: 200" />
+              </div>
+
+              <div style="display:flex; gap:10px; margin-top:8px; align-items:center">
+                <button class="btn" id="calcBtn">Hitung Molaritas</button>
+                <button class="btn secondary" id="showAnswerBtn">Tunjukkan Jawaban & Pembahasan</button>
+              </div>
+
+              <div id="answerWrap" style="margin-top:12px; display:none">
+                <label for="userAnswer">Masukkan jawaban molaritas (M)</label>
+                <input type="number" id="userAnswer" step="any" placeholder="contoh: 0.250" />
+                <div style="display:flex; gap:8px; margin-top:8px">
+                  <button class="btn" id="submitAnswer">Kirim Jawaban</button>
+                  <button class="btn secondary" id="nextToQuiz" disabled>Next → Kuis</button>
+                </div>
+                <div id="answerResult" style="margin-top:10px"></div>
+              </div>
+            </div>
+
+            <!-- Quiz area -->
+            <div id="quizArea" class="quiz-area" style="display:none">
+              <h3 style="margin:0 0 8px 0; color:var(--accent)">Kuis Bertingkat (3 Soal Acak)</h3>
+              <div id="quizContainer"></div>
+              <div style="display:flex; gap:8px; margin-top:8px">
+                <button class="btn" id="submitQuiz">Kirim Kuis</button>
+                <button class="btn secondary" id="retryQuiz" style="display:none">Ulangi Kuis</button>
+              </div>
+              <div id="quizResult" style="margin-top:10px"></div>
+            </div>
+
+            <!-- Scoreboard -->
+            <div id="scoreArea" style="display:none; margin-top:12px">
+              <h3 style="margin:0 0 8px 0; color:var(--accent)">Skor & Papan Peringkat</h3>
+              <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px">
+                <label style="margin:0; font-size:13px">Nama Anda</label>
+                <input type="text" id="playerName" value="Nurul Afifah" style="width:220px"/>
+                <button class="btn" id="saveScore">Simpan Skor</button>
+              </div>
+
+              <div class="explanation">
+                <div><strong>Skor Anda</strong></div>
+                <div id="finalScore" style="font-size:22px; margin-top:6px; font-weight:800">0 / 100</div>
+                <div class="leaderboard">
+                  <strong style="display:block; margin-top:10px">Papan Peringkat</strong>
+                  <ul id="leaderList" style="padding:0; margin:8px 0 0 0"></ul>
+                </div>
+                <div style="margin-top:8px" class="muted">Skor disimpan secara lokal pada browser Anda.</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px">
+          <button class="btn secondary" id="resetAll">Reset Simulasi</button>
+        </div>
+
+      </section>
+    </div>
+
+    <footer>
+      © <strong>Nurul Afifah</strong> — LabMix: The Molarity Quest
+    </footer>
+  </main>
+
+  <script>
+    /***********************************************************************
+     * LabMix: The Molarity Quest
+     * Interaksi: pilihan jenis larutan -> simulasi beaker -> hitung molaritas
+     * Kuis 3 tingkat acak -> skor -> leaderboard (localStorage)
+     ************************************************************************/
+
+    // Data zat contoh (nama & molar mass g/mol)
+    const compounds = [
+      { id:'NaCl', name:'Natrium Klorida (NaCl)', mm:58.44 },
+      { id:'KCl', name:'Kalium Klorida (KCl)', mm:74.55 },
+      { id:'H2SO4', name:'Asam Sulfat (H₂SO₄)', mm:98.079 },
+      { id:'C2H5OH', name:'Etanol (C₂H₅OH)', mm:46.07 },
+      { id:'CH3COOH', name:'Asam Asetat (CH₃COOH)', mm:60.05 },
+      { id:'Glucose', name:'Glukosa (C₆H₁₂O₆)', mm:180.16 }
+    ];
+
+    // Missions pool (random)
+    const missions = [
+      "Buat larutan 0.500 M dalam 250 mL menggunakan zat padat contoh.",
+      "Buat larutan akhir 0.200 M dari larutan pekat yang diketahui persen.",
+      "Tentukan molaritas campuran setelah menambahkan 3.0 g zat padat ke 200 mL pelarut.",
+      "Siapkan 500 mL larutan 0.100 M menggunakan padatan yang tersedia.",
+      "Anda harus mengencerkan larutan 2.0 M menjadi 0.5 M; hitung volume yang diperlukan."
+    ];
+
+    // Quiz pools: easy, medium, hard (each has multiple)
+    const quizPools = {
+      easy: [
+        { q:"Berapakah rumus molaritas?", a:"M = mol / L" },
+        { q:"Jika Anda memiliki 0.5 mol dalam 1 L, berapa molaritasnya?", a:"0.5" },
+        { q:"Satuan molaritas adalah ...", a:"mol/L" }
+      ],
+      medium: [
+        { q:"Anda melarutkan 11.688 g NaCl (MM 58.44) dalam 0.250 L. Berapa M?", a:(11.688/58.44/0.250).toFixed(3) },
+        { q:"Jika Anda membuat 0.2 M 500 mL larutan, berapa mol NaCl yang diperlukan?", a:(0.2*0.5).toFixed(3) },
+        { q:"Mengencerkan 1.0 M ke 0.25 M, volume awal 200 mL → berapa volume akhir?", a:(1.0*200/0.25).toFixed(0)+" mL" }
+      ],
+      hard: [
+        { q:"Anda mencampur 100 mL 0.50 M NaCl dan 200 mL 0.20 M NaCl. Berapa molaritas akhir?", a: (() => ((0.10+0.04)/0.300).toFixed(3))() },
+        { q:"Jika 3.00 g glukosa (MM 180.16) dilarutkan ke 250 mL, berapa M?", a:(3.00/180.16/0.250).toFixed(3) },
+        { q:"Asam asetat 36% w/w (densitas ~1.05 g/mL). Jika memakai 10 mL, aprox berapa mol asam asetat? (gunakan MM 60.05)", a: (() => {
+          const mass = 1.05*10; // g
+          const solute = mass*0.36;
+          return (solute/60.05).toFixed(3);
+        })() }
+      ]
+    };
+
+    // Cached elements
+    const choices = document.getElementById('choices');
+    const choiceEls = document.querySelectorAll('.choice');
+    const topicText = document.getElementById('topicText');
+    const missionWrap = document.getElementById('missionWrap');
+    const missionText = document.getElementById('missionText');
+    const regenMissionBtn = document.getElementById('regenMission');
+    const beakerLiquid = document.getElementById('beaker-liquid');
+    const experiment = document.getElementById('experiment');
+    const compoundSelect = document.getElementById('compound');
+    const inputsSolid = document.getElementById('inputsSolid');
+    const inputsLiquid = document.getElementById('inputsLiquid');
+    const inputsMix = document.getElementById('inputsMix');
+    const calcBtn = document.getElementById('calcBtn');
+    const showAnswerBtn = document.getElementById('showAnswerBtn');
+    const answerWrap = document.getElementById('answerWrap');
+    const submitAnswer = document.getElementById('submitAnswer');
+    const userAnswer = document.getElementById('userAnswer');
+    const answerResult = document.getElementById('answerResult');
+    const nextToQuiz = document.getElementById('nextToQuiz');
+    const quizArea = document.getElementById('quizArea');
+    const quizContainer = document.getElementById('quizContainer');
+    const submitQuizBtn = document.getElementById('submitQuiz');
+    const retryQuizBtn = document.getElementById('retryQuiz');
+    const quizResult = document.getElementById('quizResult');
+    const scoreArea = document.getElementById('scoreArea');
+    const finalScoreEl = document.getElementById('finalScore');
+    const playerName = document.getElementById('playerName');
+    const saveScoreBtn = document.getElementById('saveScore');
+    const leaderList = document.getElementById('leaderList');
+    const resetAll = document.getElementById('resetAll');
+    const intro = document.getElementById('intro');
+
+    // state
+    let currentType = null;
+    let currentMission = null;
+    let currentCorrectM = null; // computed molarity correct
+    let currentTolerance = 0.01; // tolerance for numeric check
+    let quizSelected = [];
+    let quizScore = 0;
+    let finalScore = 0;
+
+    // Init compound select
+    function populateCompounds(){
+      compoundSelect.innerHTML = '';
+      compounds.forEach(c=>{
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.name + ' — MM ' + c.mm + ' g·mol⁻¹';
+        opt.dataset.mm = c.mm;
+        compoundSelect.appendChild(opt);
+      });
+    }
+
+    populateCompounds();
+
+    // Choice selection handling
+    choiceEls.forEach(el=>{
+      el.addEventListener('click', ()=> selectType(el.dataset.type, el));
+      el.addEventListener('keydown', (e)=>{ if(e.key==='Enter') selectType(el.dataset.type, el); });
+    });
+
+    function selectType(type, el){
+      currentType = type;
+      // set active class
+      choiceEls.forEach(c=>c.classList.remove('active'));
+      el.classList.add('active');
+
+      // show explanations & inputs depending on type
+      missionWrap.style.display = 'block';
+      experiment.style.display = 'block';
+      answerWrap.style.display = 'none';
+      quizArea.style.display = 'none';
+      scoreArea.style.display = 'none';
+      answerResult.innerHTML = '';
+      userAnswer.value = '';
+
+      // set topic text
+      if(type==='solid'){
+        topicText.textContent = "Anda memilih larutan dari zat padat. Umumnya kita menimbang zat padat (gram), mengetahui massa molar (g·mol⁻¹), lalu melarutkan hingga volume tertentu (L) untuk mendapatkan molaritas M = mol / L.";
+        inputsSolid.style.display = 'block';
+        inputsLiquid.style.display = 'none';
+        inputsMix.style.display = 'none';
+      }else if(type==='liquid'){
+        topicText.textContent = "Anda memilih larutan dari zat cair (contoh: asam pekat). Untuk masalah sederhana kita bisa menggunakan pendekatan persen dan densitas untuk mengestimasi jumlah mol sebelum pengenceran.";
+        inputsSolid.style.display = 'none';
+        inputsLiquid.style.display = 'block';
+        inputsMix.style.display = 'none';
+      }else{
+        topicText.textContent = "Anda memilih campuran. Soal campuran sering membutuhkan penjumlahan mol total dibagi volume akhir. Kita akan menggunakan padatan + pelarut sebagai contoh.";
+        inputsSolid.style.display = 'none';
+        inputsLiquid.style.display = 'none';
+        inputsMix.style.display = 'block';
+      }
+
+      // choose mission randomly
+      pickRandomMission();
+      // reset beaker
+      beakerLiquid.style.height = '15%';
+      beakerLiquid.textContent = '--';
+      currentCorrectM = null;
+      nextToQuiz.disabled = true;
+    }
+
+    function pickRandomMission(){
+      currentMission = missions[Math.floor(Math.random()*missions.length)];
+      missionText.textContent = currentMission;
+      missionWrap.style.display = 'block';
+    }
+
+    regenMissionBtn.addEventListener('click', ()=> pickRandomMission());
+
+    // update beaker visual helper
+    function updateBeakerByVolume(ml){
+      // map ml (0-1000) to height %
+      const max = 1000;
+      const perc = Math.min(90, Math.max(6, (ml / max) * 90));
+      beakerLiquid.style.height = perc + '%';
+      beakerLiquid.textContent = `${(ml||0).toFixed(0)} mL`;
+    }
+
+    // Calculation logic
+    calcBtn.addEventListener('click', ()=> {
+      answerResult.innerHTML = '';
+      userAnswer.value = '';
+      answerWrap.style.display = 'none';
+      currentCorrectM = null;
+
+      const selectedCompound = compounds.find(c=>c.id === compoundSelect.value);
+      if(!selectedCompound){
+        alert('Pilih senyawa dulu.');
+        return;
+      }
+
+      if(currentType==='solid'){
+        const mass = parseFloat(document.getElementById('mass').value);
+        const volMl = parseFloat(document.getElementById('volMl').value);
+        if(!mass || !volMl){ alert('Masukkan massa (g) dan volume (mL).'); return;}
+        const mol = mass / selectedCompound.mm;
+        const volL = volMl / 1000;
+        const M = mol / volL;
+        currentCorrectM = M;
+        // update beaker
+        updateBeakerByVolume(volMl);
+        showCalculatedSummary(mass, selectedCompound.mm, mol, volL, M);
+      } else if(currentType==='liquid'){
+        const percent = parseFloat(document.getElementById('concPercent').value);
+        const volFinal = parseFloat(document.getElementById('volFinal').value);
+        if(!percent || !volFinal){ alert('Masukkan konsentrasi awal (%) dan volume final (mL).'); return;}
+        // Simple approximate: percent as % w/v -> g solute per 100 mL
+        // Assume % w/v: percent g per 100 mL
+        const gPer100mL = percent; // approximate
+        const massSolute = gPer100mL * (volFinal / 100);
+        const mol = massSolute / selectedCompound.mm;
+        const volL = volFinal / 1000;
+        const M = mol / volL;
+        currentCorrectM = M;
+        updateBeakerByVolume(volFinal);
+        showCalculatedSummary(massSolute, selectedCompound.mm, mol, volL, M);
+      } else if(currentType==='mixture'){
+        const massMix = parseFloat(document.getElementById('massMix').value);
+        const volMix = parseFloat(document.getElementById('volMix').value);
+        if(!massMix || !volMix){ alert('Masukkan massa dan volume'); return;}
+        const mol = massMix / selectedCompound.mm;
+        const volL = volMix / 1000;
+        const M = mol / volL;
+        currentCorrectM = M;
+        updateBeakerByVolume(volMix);
+        showCalculatedSummary(massMix, selectedCompound.mm, mol, volL, M);
+      }
+
+      // reveal answer input
+      answerWrap.style.display = 'block';
+    });
+
+    function showCalculatedSummary(mass, mm, mol, volL, M){
+      // For learning, show summary but hide exact numeric M until user requests
+      const html = `
+        <div><strong>Ringkasan Perhitungan</strong></div>
+        <div class="muted" style="margin-top:6px">
+          Massa zat (g): ${mass.toFixed(3)} <br/>
+          Molar mass (g·mol⁻¹): ${mm.toFixed(3)} <br/>
+          Jumlah mol: ${mol.toFixed(4)} mol <br/>
+          Volume (L): ${volL.toFixed(3)} L <br/>
+        </div>
+        <div style="margin-top:8px;" class="muted">Masukkan jawaban molaritas Anda di kolom di bawah. Jika butuh, klik "Tunjukkan Jawaban & Pembahasan".</div>
+      `;
+      answerResult.innerHTML = html;
+    }
+
+    // showAnswerBtn reveals exact calculation/pembahasan
+    showAnswerBtn.addEventListener('click', ()=>{
+      if(currentCorrectM==null){ alert('Lakukan perhitungan terlebih dahulu'); return;}
+      const explanation = `
+        <div class="result success">
+          <strong>Jawaban & Pembahasan</strong>
+          <div class="muted" style="margin-top:6px">
+            M = jumlah mol / volume (L) → M = ${currentCorrectM.toFixed(4)} M (nilai sebenarnya).
+            <div style="margin-top:6px">Pembahasan singkat: hitung mol = massa / MM → bagi dengan volume (L).</div>
+          </div>
+        </div>
+      `;
+      answerResult.innerHTML = explanation;
+      // allow user to still input and submit to practice
+      answerWrap.style.display = 'block';
+      nextToQuiz.disabled = false;
+    });
+
+    // submit student's answer
+    submitAnswer.addEventListener('click', ()=>{
+      if(currentCorrectM==null){ alert('Hitung dulu untuk mengetahui soal.'); return;}
+      const val = parseFloat(userAnswer.value);
+      if(isNaN(val)){ alert('Masukkan jawaban numerik (contoh: 0.250)'); return;}
+      const diff = Math.abs(val - currentCorrectM);
+      const tol = Math.max(currentTolerance, Math.abs(currentCorrectM)*0.02); // allow relative tolerance
+      if(diff <= tol){
+        answerResult.innerHTML = `<div class="result success">Betul! Jawaban Anda ≈ ${val.toFixed(4)} M. Pembahasan: nilai benar adalah ${currentCorrectM.toFixed(4)} M.</div>`;
+        nextToQuiz.disabled = false;
+      } else {
+        answerResult.innerHTML = `<div class="result fail">Coba lagi — jawaban Anda ${val.toFixed(4)} M tidak sesuai. Nilai benar ≈ ${currentCorrectM.toFixed(4)} M. Periksa langkah: massa → mol → volume(L).</div>`;
+        nextToQuiz.disabled = false; // still allow to proceed
+      }
+    });
+
+    // Proceed to quiz
+    nextToQuiz.addEventListener('click', ()=>{
+      buildQuiz();
+      quizArea.style.display = 'block';
+      // scroll into view lightly
+      quizArea.scrollIntoView({behavior:'smooth', block:'center'});
+    });
+
+    // Quiz builder picks 3 random: one from each difficulty
+    function buildQuiz(){
+      quizContainer.innerHTML = '';
+      quizSelected = [];
+      // pick one from each pool and randomize order
+      const easy = quizPools.easy[Math.floor(Math.random()*quizPools.easy.length)];
+      const med = quizPools.medium[Math.floor(Math.random()*quizPools.medium.length)];
+      const hard = quizPools.hard[Math.floor(Math.random()*quizPools.hard.length)];
+      quizSelected = [easy, med, hard].map((item, idx)=>({...item, id:idx}));
+      // shuffle
+      quizSelected.sort(()=>Math.random()-0.5);
+
+      quizSelected.forEach((q,i)=>{
+        const wrap = document.createElement('div');
+        wrap.className = 'quiz-question';
+        wrap.innerHTML = `
+          <div><strong>Soal ${i+1}:</strong></div>
+          <div style="margin-top:8px" id="qtext-${q.id}">${q.q}</div>
+          <label style="margin-top:8px">Jawaban Anda</label>
+          <input type="text" id="qans-${q.id}" placeholder="Ketik jawaban (angka atau teks)"/>
+        `;
+        quizContainer.appendChild(wrap);
+      });
+
+      submitQuizBtn.style.display = 'inline-block';
+      retryQuizBtn.style.display = 'none';
+      quizResult.innerHTML = '';
+      quizScore = 0;
+    }
+
+    // Quiz submit
+    submitQuizBtn.addEventListener('click', ()=>{
+      // grade each
+      quizScore = 0;
+      quizSelected.forEach((q)=>{
+        const ansEl = document.getElementById('qans-'+q.id);
+        const user = (ansEl.value || '').trim();
+        const correct = (''+q.a).trim();
+
+        // numeric compare if both are numeric
+        const numUser = parseFloat(user);
+        const numCorrect = parseFloat(correct);
+
+        let ok = false;
+        if(!isNaN(numUser) && !isNaN(numCorrect)){
+          const d = Math.abs(numUser - numCorrect);
+          ok = d <= Math.max(0.01, Math.abs(numCorrect)*0.02);
+        } else {
+          // compare lowercase strings
+          ok = user.toLowerCase() === correct.toLowerCase();
+        }
+        if(ok) quizScore += 1;
+      });
+
+      // score out of 3, map to 0-100
+      finalScore = Math.round((quizScore / quizSelected.length) * 100);
+      quizResult.innerHTML = `<div class="result success"><strong>Hasil Kuis</strong><div class="muted">Anda menjawab benar ${quizScore} dari ${quizSelected.length} soal. Skor: ${finalScore} / 100</div></div>`;
+      finalScoreEl.textContent = finalScore + ' / 100';
+      // show score area
+      scoreArea.style.display = 'block';
+      // allow saving score
+      saveScoreBtn.disabled = false;
+      // hide submit button, show retry
+      submitQuizBtn.style.display = 'none';
+      retryQuizBtn.style.display = 'inline-block';
+    });
+
+    retryQuizBtn.addEventListener('click', ()=>{
+      buildQuiz();
+    });
+
+    // Leaderboard handling (localStorage)
+    const STORAGE_KEY = 'labmix_leaderboard_v1';
+
+    function loadLeaderboard(){
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw){
+        // seed with dummy data
+        const seed = [
+          {name:'Ardi', score:95, date: new Date().toISOString()},
+          {name:'Siti', score:88, date: new Date().toISOString()},
+          {name:'Bima', score:76, date: new Date().toISOString()}
+        ];
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(seed));
+        return seed;
+      }
+      try{
+        return JSON.parse(raw);
+      }catch(e){
+        return [];
+      }
+    }
+
+    function renderLeaderboard(){
+      const data = loadLeaderboard();
+      // sort desc
+      data.sort((a,b)=>b.score - a.score);
+      leaderList.innerHTML = '';
+      data.slice(0,8).forEach(item=>{
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${escapeHtml(item.name)}</span><span>${item.score} / 100</span>`;
+        leaderList.appendChild(li);
+      });
+    }
+
+    saveScoreBtn.addEventListener('click', ()=>{
+      const name = (playerName.value || 'Anonim').trim();
+      if(!name) { alert('Isikan nama.'); return; }
+      const data = loadLeaderboard();
+      data.push({ name: name, score: finalScore, date: new Date().toISOString() });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      renderLeaderboard();
+      saveScoreBtn.disabled = true;
+      alert('Skor tersimpan secara lokal.');
+    });
+
+    // reset
+    resetAll.addEventListener('click', ()=>{
+      if(confirm('Reset simulasi akan mengosongkan pilihan saat ini. Lanjutkan?')){
+        // clear UI
+        choiceEls.forEach(c=>c.classList.remove('active'));
+        experiment.style.display = 'none';
+        missionWrap.style.display = 'none';
+        quizArea.style.display = 'none';
+        scoreArea.style.display = 'none';
+        beakerLiquid.style.height = '15%';
+        beakerLiquid.textContent = '--';
+        answerWrap.style.display = 'none';
+        answerResult.innerHTML = '';
+        currentType = null;
+      }
+    });
+
+    // small helper: escape html
+    function escapeHtml(s){
+      return s.replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])});
+    }
+
+    // initial render
+    renderLeaderboard();
+
+    // Accessibility: allow first choice auto focus
+    choiceEls[0].focus();
+
+    // On load, small tip
+    (function showTip(){
+      const tip = document.createElement('div');
+      tip.style.position='fixed';
+      tip.style.left='20px';
+      tip.style.bottom='20px';
+      tip.style.background='rgba(14,165,233,0.95)';
+      tip.style.color='white';
+      tip.style.padding='10px 14px';
+      tip.style.borderRadius='10px';
+      tip.style.boxShadow='0 8px 20px rgba(2,6,23,0.12)';
+      tip.style.fontSize='13px';
+      tip.style.zIndex='9999';
+      tip.textContent = 'Tip: pilih jenis larutan di kiri untuk memulai simulasi.';
+      document.body.appendChild(tip);
+      setTimeout(()=> tip.remove(), 4500);
+    })();
+  </script>
+</body>
+</html>
